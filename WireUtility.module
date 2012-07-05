@@ -1,0 +1,72 @@
+<?php
+class WireUtility extends WireData implements Module {
+
+	public static function getModuleInfo() {
+		return array(
+            'title' => '', 
+            'version' => '0.1', 
+            'summary' => 'Utility functions for processwire',
+			'singular' => true, 
+            'autoload' => false, 
+            'permission' => "",
+        );
+	}
+
+    public function init() {
+    } 
+
+	/**
+	 * Process the input from a submitted Page Edit form, delegating to other methods where appropriate
+ 	 *
+	 */
+	public function ___processInput(Page $page, Inputfield $form, $level = 0) {
+		static $skipFields = array(
+			'sortfield_reverse', 
+			'submit_publish', 
+			'submit_save',
+			);
+
+		if(!$level) $form->processInput($this->input->post);
+
+		foreach($form as $inputfield) {
+
+            $name = $inputfield->attr('name');
+            if(in_array($name, $skipFields)) continue; 
+            //if(!$page->editable($name)) { continue; }
+            //if($inputfield instanceof InputfieldFile) continue;
+
+            if($name == 'sortfield' && $this->useChildren) {
+                $this->processInputSortfield($inputfield) ;
+                continue;
+            }
+
+            if($this->useSettings) { 
+
+                if($name == 'template') { 
+                    $this->processInputTemplate($inputfield); 
+                    continue; 
+                }
+
+                if($name == 'status' && $this->processInputStatus($inputfield)) continue; 
+            }
+
+            $page->set($name, $inputfield->value);
+
+            if($inputfield instanceof InputfieldWrapper && count($inputfield->getChildren())) $this->processInput($page, $inputfield, $level + 1); 
+		}
+	}
+
+    public function ___require($form, $fields) {
+        foreach($fields as $fieldName) {
+            $field = $form->get($fieldName);
+            $value = $field->attr('value');
+
+            if( 
+                ($value instanceof PageArray && !$value->count()) ||  
+                empty($value)
+            ) 
+                $field->error(_("{$field->label} is required"));
+        }
+    }
+
+}
