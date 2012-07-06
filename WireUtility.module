@@ -1,34 +1,33 @@
 <?php
 class WireUtility extends WireData implements Module {
-
-	public static function getModuleInfo() {
-		return array(
-            'title' => '', 
-            'version' => '0.1', 
+    public static function getModuleInfo() {
+        return array(
+            'title' => 'WireUtility', 
+            'version' => 001,
             'summary' => 'Utility functions for processwire',
-			'singular' => true, 
+            'singular' => true, 
             'autoload' => false, 
             'permission' => "",
         );
-	}
+    }
 
     public function init() {
     } 
 
-	/**
-	 * Process the input from a submitted Page Edit form, delegating to other methods where appropriate
- 	 *
-	 */
-	public function ___processInput(Page $page, Inputfield $form, $level = 0) {
-		static $skipFields = array(
-			'sortfield_reverse', 
-			'submit_publish', 
-			'submit_save',
-			);
+    /**
+     * Process the input from a submitted Page Edit form, delegating to other methods where appropriate
+     *
+     */
+    public function ___processInput(Page $page, Inputfield $form, $level = 0) {
+        static $skipFields = array(
+            'sortfield_reverse', 
+            'submit_publish', 
+            'submit_save',
+        );
 
-		if(!$level) $form->processInput($this->input->post);
+        if(!$level) $form->processInput($this->input->post);
 
-		foreach($form as $inputfield) {
+        foreach($form as $inputfield) {
 
             $name = $inputfield->attr('name');
             if(in_array($name, $skipFields)) continue; 
@@ -53,8 +52,8 @@ class WireUtility extends WireData implements Module {
             $page->set($name, $inputfield->value);
 
             if($inputfield instanceof InputfieldWrapper && count($inputfield->getChildren())) $this->processInput($page, $inputfield, $level + 1); 
-		}
-	}
+        }
+    }
 
     public function ___require($form, $fields) {
         foreach($fields as $fieldName) {
@@ -65,7 +64,7 @@ class WireUtility extends WireData implements Module {
                 ($value instanceof PageArray && !$value->count()) ||  
                 empty($value)
             ) 
-                $field->error(_("{$field->label} is required"));
+            $field->error(_("{$field->label} is required"));
         }
     }
 
