@@ -6,12 +6,15 @@ class WireUtility extends WireData implements Module {
             'version' => 001,
             'summary' => 'Utility functions for processwire',
             'singular' => true, 
-            'autoload' => true, 
+            'autoload' => false, 
             'permission' => "",
         );
     }
 
     public function init() {
+		$class = $this->className();
+        define('WIRE_UTILITY_PATH', $this->config->paths->$class);
+        spl_autoload_register('WireUtilityLoader');
     } 
 
     /**
@@ -68,4 +71,38 @@ class WireUtility extends WireData implements Module {
         }
     }
 
+    public function createInputFields(array $fieldConfig, $data) {
+        //Initialize fields
+        $inputfields = new InputfieldWrapper();
+        foreach($fieldConfig as $name => $config ) {
+            if(!isset($data[$name])) $data[$name] = isset($config['defaultValue']) ? $config['defaultValue'] : '';
+            $type = isset($config['type']) ? $config['type'] : 'InputfieldText';
+            $f = wire('modules')->get($type);
+            $f->attr('id+name', $name);
+            $f->label = $config['label'];
+            $f->description = isset($config['description']) ? $config['description'] : '';
+
+            //skip populating password field, unless we have post data
+            if($name !== 'password')
+                $f->value = $data[$name];
+
+            if(isset($config['attributes'])) 
+                foreach($config['attributes'] as $attr => $value) $f->attr($attr, $value);
+
+            $inputfields->append($f);
+        }
+
+        $password = wire('input')->post->password;
+        if(empty($password)) 
+            wire('input')->post->password=$data['password'];
+
+        return $inputfields;
+    }
+}
+
+function WireUtilityLoader($className) {
+	$file = WIRE_UTILITY_PATH . "include/$className.php"; 
+	if(is_file($file)) {
+		require($file); 
+    } 
 }
