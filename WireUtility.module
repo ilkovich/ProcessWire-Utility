@@ -6,7 +6,7 @@ class WireUtility extends WireData implements Module {
             'version' => 001,
             'summary' => 'Utility functions for processwire',
             'singular' => true, 
-            'autoload' => false, 
+            'autoload' => true, 
             'permission' => "",
         );
     }
