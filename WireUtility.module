@@ -15,6 +15,7 @@ class WireUtility extends WireData implements Module {
 		$class = $this->className();
         define('WIRE_UTILITY_PATH', $this->config->paths->$class);
         spl_autoload_register('WireUtilityLoader');
+        $this->config->inlineScripts = new InlineScriptArray();
     } 
 
     /**
